@@ -55,11 +55,23 @@ function render(){
  if(current.heroImageURL){prev.src=current.heroImageURL;prev.style.display='block'}else{prev.src='';prev.style.display='none'}
 }
 
+async function fetchContentDoc(retriesLeft=1){
+ try{
+  return await getDoc(CONTENT_DOC);
+ }catch(e){
+  if(retriesLeft>0){
+   await new Promise(r=>setTimeout(r,1500));
+   return fetchContentDoc(retriesLeft-1);
+  }
+  throw e;
+ }
+}
+
 async function load(){
  current=localData();
  render();
  try{
-  const snap=await getDoc(CONTENT_DOC);
+  const snap=await fetchContentDoc();
   if(snap.exists()){
    current=Object.assign({},defaults,snap.data());
    localStorage.setItem(KEY,JSON.stringify(current));
