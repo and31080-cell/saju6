@@ -1,29 +1,142 @@
+
 <!doctype html>
 <html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>도화당 관리자</title>
 <style>
 *{box-sizing:border-box}body{margin:0;background:#f5f0e8;color:#211e1a;font-family:Arial,'Noto Sans KR',sans-serif}.wrap{max-width:980px;margin:auto;padding:35px 18px 70px}.login,.admin{background:#fff;border:1px solid #e5d9c7;border-radius:20px;padding:28px;box-shadow:0 15px 45px #0000000d}.login{max-width:420px;margin:12vh auto}.admin{display:none}.logo{font-size:24px;font-weight:700;margin-bottom:8px}.muted{color:#81776c;font-size:13px;line-height:1.7}.field{margin:18px 0}.field label{display:block;font-weight:700;font-size:13px;margin-bottom:7px}input,textarea{width:100%;border:1px solid #ddd1bf;border-radius:10px;padding:12px;font:inherit;background:#fff}textarea{min-height:90px;resize:vertical}.grid{display:grid;grid-template-columns:1fr 1fr;gap:15px}.full{grid-column:1/-1}.section{border-top:1px solid #eadfce;padding:25px 0}.section h2{font-size:19px;margin:0 0 5px}.section h3{font-size:15px;margin:20px 0 8px}.actions{position:sticky;bottom:12px;background:#fff;border:1px solid #e5d9c7;border-radius:14px;padding:12px;display:flex;gap:9px;z-index:5}button{border:0;border-radius:10px;padding:12px 17px;font-weight:700;cursor:pointer}.primary{background:#1d1b19;color:#fff}.secondary{background:#eee7dc}.danger{background:#f4dddd}.notice{display:none;padding:11px;border-radius:9px;background:#f0eadf;margin-bottom:15px;font-size:13px}@media(max-width:700px){.grid{grid-template-columns:1fr}.full{grid-column:auto}}
 </style></head><body><div class="wrap">
-<div class="login" id="login"><div class="logo">도화당 관리자</div><p class="muted">홈페이지에 표시되는 문구를 수정할 수 있습니다.</p><div class="field"><label>관리자 비밀번호</label><input id="pw" type="password" placeholder="비밀번호"></div><button class="primary" style="width:100%" onclick="login()">관리자 페이지 들어가기</button></div>
-<div class="admin" id="admin"><div class="logo">도화당 · 문구 관리</div><p class="muted">수정한 내용은 같은 브라우저의 홈페이지에 저장됩니다. 홈페이지와 admin.html이 같은 도메인/폴더에서 실행되어야 합니다.</p><div class="notice" id="notice"></div>
-<div class="section"><h2>홈페이지 첫 화면</h2><div class="grid"><div class="field"><label>사이트 이름</label><input data-key="logo"></div><div class="field"><label>상단 문구</label><input data-key="navSub"></div><div class="field"><label>상단 작은 제목</label><input data-key="heroKicker"></div><div class="field full"><label>메인 제목</label><textarea data-key="heroTitle"></textarea><p class="muted">줄바꿈은 &lt;br&gt;을 사용할 수 있습니다.</p></div><div class="field full"><label>메인 설명</label><textarea data-key="heroSub"></textarea></div></div></div>
+<div class="login" id="login"><div class="logo">도화당 관리자</div><p class="muted">홈페이지에 표시되는 문구와 이미지를 수정할 수 있습니다.</p><div class="field"><label>관리자 비밀번호</label><input id="pw" type="password" placeholder="비밀번호"></div><button class="primary" style="width:100%" onclick="login()">관리자 페이지 들어가기</button></div>
+<div class="admin" id="admin"><div class="logo">도화당 · 문구 관리</div><p class="muted">수정한 내용은 Firebase에 저장되어 어떤 기기·브라우저에서 접속해도 홈페이지에 동일하게 반영됩니다. (네트워크 오류 시에는 이 브라우저에 마지막으로 불러온 내용이 임시로 표시됩니다.)</p><div class="notice" id="notice"></div>
+<div class="section"><h2>홈페이지 첫 화면</h2><div class="grid"><div class="field"><label>사이트 이름</label><input data-key="logo"></div><div class="field"><label>상단 문구</label><input data-key="navSub"></div><div class="field"><label>상단 작은 제목</label><input data-key="heroKicker"></div><div class="field full"><label>메인 제목</label><textarea data-key="heroTitle"></textarea><p class="muted">줄바꿈은 &lt;br&gt;을 사용할 수 있습니다.</p></div><div class="field full"><label>메인 설명</label><textarea data-key="heroSub"></textarea></div><div class="field full"><label>히어로 배경 이미지</label><input type="file" accept="image/*" onchange="onImageChosen(this)"><p class="muted">업로드 후 <b>저장하기</b>를 눌러야 Firebase Storage에 올라가고 홈페이지에 반영됩니다. 비워두면 기존 background.png가 계속 사용됩니다.</p><div><img id="heroImgPreview" alt="미리보기" src="" style="display:none;max-width:240px;margin-top:8px;border-radius:12px;border:1px solid #e5d9c7"></div><button type="button" class="secondary" style="margin-top:8px" onclick="removeImage()">이미지 제거(기본 이미지 사용)</button></div></div></div>
 <div class="section"><h2>분석 메뉴 제목 / 설명</h2><p class="muted">각 사주 결과 화면의 섹션 제목과 설명을 수정합니다.</p><div id="sections"></div></div>
 <div class="section"><h2>분석 카드 문구</h2><p class="muted">비워두면 기존의 자동 생성 문구가 사용됩니다. 입력하면 해당 카드의 문구를 고정해서 표시합니다.</p><div id="cards"></div></div>
 <div class="section"><h2>하단 안내 문구</h2><textarea data-key="disclaimer"></textarea></div>
-<div class="actions"><button class="primary" onclick="save()">저장하기</button><button class="secondary" onclick="preview()">홈페이지 보기</button><button class="danger" onclick="resetAll()">기본값 복원</button></div>
+<div class="actions"><button class="primary" id="saveBtn" onclick="save()">저장하기</button><button class="secondary" onclick="preview()">홈페이지 보기</button><button class="danger" onclick="resetAll()">기본값 복원</button></div>
 </div></div>
-<script>
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/12.18.0/firebase-app.js";
+import { getFirestore, doc, getDoc, setDoc } from "https://www.gstatic.com/firebasejs/12.18.0/firebase-firestore.js";
+import { getStorage, ref, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/12.18.0/firebase-storage.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyC4K3Eehdlss84p2aguBeWbeVnceZ-VFcY",
+  authDomain: "saju-0912.firebaseapp.com",
+  projectId: "saju-0912",
+  storageBucket: "saju-0912.firebasestorage.app",
+  messagingSenderId: "429303363317",
+  appId: "1:429303363317:web:969bab779768326418b7bc",
+  measurementId: "G-VGFSMBMDBK"
+};
+const fbApp=initializeApp(firebaseConfig);
+const db=getFirestore(fbApp);
+const storage=getStorage(fbApp);
+const CONTENT_DOC=doc(db,'dohwadang','content');
+const ADMIN_PW='1234'; // 관리자 로그인 비밀번호. Firestore/Storage 저장 규칙 검증에도 함께 쓰입니다(아래 안내 참고).
+
 const KEY='dohwadang_saju_content_v1';
 const sections={basic:['1. 기본 사주 정보','사주팔자와 오행의 기본 구조'],nature:['2. 핵심 성향 분석 ⭐','“당신은 어떤 사람인가?”'],money:['3. 재물운 💰','어떤 방식으로 돈을 벌어야 유리한가'],career:['4. 직업·사업운','일하는 방식과 성공 가능성'],love:['5. 연애·결혼운 ❤️','관계에서 드러나는 나의 모습'],health:['6. 건강·생활운','의학적 진단이 아닌 생활 관리 관점의 해석'],flow:['7. 대운·세운 ⭐⭐⭐','과거 → 현재 → 미래의 흐름'],stars:['8. 신살·귀인 분석','내 사주에 나타나는 특징과 보조적인 상징'],today:['9. 오늘의 사주 ⭐','매일 다른 조합으로 생성되는 오늘의 메시지'],summary:['10. 한눈에 보는 나','내 사주를 한 문장씩 정리']};
 const cardNames=['타고난 성격','장점','단점','숨겨진 성향','인간관계 스타일','스트레스 받을 때','잘 맞는 사람','충돌하기 쉬운 사람','타고난 재물운','돈을 버는 방식','투자 성향','사업운','직장인 재물운','재물을 모으는 데 방해되는 성향','타고난 직업 성향','잘 맞는 일','조직생활 적합도','사업 적합도','리더십','조심할 직업적 성향','연애 스타일','사랑할 때 나타나는 특징','이상형','반복되는 문제','현재 연애 중이라면','솔로라면','결혼·인연 흐름','생활 리듬','스트레스 관리','에너지 흐름','휴식이 필요한 순간','생활 주의점'];
-const defaults={logo:'桃花堂 · 도화당',navSub:'SAJU · 命理',heroKicker:'BIRTH DATA · DESTINY · FLOW',heroTitle:'나의 사주를<br>알아보세요',heroSub:'사주팔자와 오행부터 타고난 성향, 재물·직업·연애운, 대운의 흐름과 오늘의 운세까지 한 번에 확인하세요.',sections,cardText:Object.fromEntries(cardNames.map(x=>[x,''])),disclaimer:'※ 본 서비스의 결과는 전통 명리학을 참고한 엔터테인먼트·정보 콘텐츠입니다. 건강, 투자, 법률, 의료 등 중요한 의사결정의 유일한 근거로 사용하지 마세요.'};
-function data(){try{return JSON.parse(localStorage.getItem(KEY))||structuredClone(defaults)}catch(e){return structuredClone(defaults)}}
-function login(){if(document.getElementById('pw').value==='1234'){sessionStorage.setItem('dohwadang_admin','1');show()}else alert('비밀번호가 올바르지 않습니다.')}
-function show(){document.getElementById('login').style.display='none';document.getElementById('admin').style.display='block';load()}
-function load(){const d=data();document.querySelectorAll('[data-key]').forEach(el=>el.value=d[el.dataset.key]??'');document.getElementById('sections').innerHTML=Object.entries(sections).map(([k,v])=>`<div class="grid"><div class="field"><label>${v[0]} · 제목</label><input data-sec="${k}" data-part="0" value="${esc((d.sections?.[k]||v)[0])}"></div><div class="field"><label>${v[0]} · 설명</label><input data-sec="${k}" data-part="1" value="${esc((d.sections?.[k]||v)[1])}"></div></div>`).join('');document.getElementById('cards').innerHTML=cardNames.map(n=>`<div class="field"><label>${n}</label><textarea data-card="${esc(n)}">${esc(d.cardText?.[n]||'')}</textarea></div>`).join('')}
+const defaults={logo:'桃花堂 · 도화당',navSub:'SAJU · 命理',heroKicker:'BIRTH DATA · DESTINY · FLOW',heroTitle:'나의 사주를<br>알아보세요',heroSub:'사주팔자와 오행부터 타고난 성향, 재물·직업·연애운, 대운의 흐름과 오늘의 운세까지 한 번에 확인하세요.',heroImageURL:'',sections,cardText:Object.fromEntries(cardNames.map(x=>[x,''])),disclaimer:'※ 본 서비스의 결과는 전통 명리학을 참고한 엔터테인먼트·정보 콘텐츠입니다. 건강, 투자, 법률, 의료 등 중요한 의사결정의 유일한 근거로 사용하지 마세요.'};
+
+let current=structuredClone(defaults);
+let pendingImageFile=null;
+let removeImageFlag=false;
+
+function localData(){try{return Object.assign({},defaults,JSON.parse(localStorage.getItem(KEY)||'{}'))}catch(e){return structuredClone(defaults)}}
 function esc(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;')}
-function save(){const d=data();document.querySelectorAll('[data-key]').forEach(el=>d[el.dataset.key]=el.value);d.sections={};Object.entries(sections).forEach(([k,v])=>d.sections[k]=[document.querySelector(`[data-sec="${k}"][data-part="0"]`).value,document.querySelector(`[data-sec="${k}"][data-part="1"]`).value]);d.cardText={};document.querySelectorAll('[data-card]').forEach(el=>d.cardText[el.dataset.card]=el.value);localStorage.setItem(KEY,JSON.stringify(d));notice('저장되었습니다. 홈페이지를 새로 열거나 새로고침하면 적용됩니다.')}
-function notice(t){const n=document.getElementById('notice');n.textContent=t;n.style.display='block';setTimeout(()=>n.style.display='none',2500)}
+
+function login(){if(document.getElementById('pw').value===ADMIN_PW){sessionStorage.setItem('dohwadang_admin','1');show()}else alert('비밀번호가 올바르지 않습니다.')}
+function show(){document.getElementById('login').style.display='none';document.getElementById('admin').style.display='block';load()}
+
+function render(){
+ document.querySelectorAll('[data-key]').forEach(el=>el.value=current[el.dataset.key]??'');
+ document.getElementById('sections').innerHTML=Object.entries(sections).map(([k,v])=>`<div class="grid"><div class="field"><label>${v[0]} · 제목</label><input data-sec="${k}" data-part="0" value="${esc((current.sections?.[k]||v)[0])}"></div><div class="field"><label>${v[0]} · 설명</label><input data-sec="${k}" data-part="1" value="${esc((current.sections?.[k]||v)[1])}"></div></div>`).join('');
+ document.getElementById('cards').innerHTML=cardNames.map(n=>`<div class="field"><label>${n}</label><textarea data-card="${esc(n)}">${esc(current.cardText?.[n]||'')}</textarea></div>`).join('');
+ const prev=document.getElementById('heroImgPreview');
+ if(current.heroImageURL){prev.src=current.heroImageURL;prev.style.display='block'}else{prev.src='';prev.style.display='none'}
+}
+
+async function load(){
+ current=localData();
+ render();
+ try{
+  const snap=await getDoc(CONTENT_DOC);
+  if(snap.exists()){
+   current=Object.assign({},defaults,snap.data());
+   localStorage.setItem(KEY,JSON.stringify(current));
+   render();
+  }
+ }catch(e){
+  console.error(e);
+  notice('Firebase에서 최신 내용을 불러오지 못했습니다. 이 브라우저에 저장된 내용을 표시합니다.');
+ }
+}
+
+function onImageChosen(input){
+ const f=input.files&&input.files[0];
+ if(!f)return;
+ pendingImageFile=f;removeImageFlag=false;
+ const reader=new FileReader();
+ reader.onload=()=>{const prev=document.getElementById('heroImgPreview');prev.src=reader.result;prev.style.display='block'};
+ reader.readAsDataURL(f);
+}
+function removeImage(){
+ pendingImageFile=null;removeImageFlag=true;
+ const prev=document.getElementById('heroImgPreview');
+ prev.src='';prev.style.display='none';
+}
+
+async function save(){
+ const btn=document.getElementById('saveBtn');
+ const oldLabel=btn.textContent;
+ btn.disabled=true;btn.textContent='저장 중...';
+ try{
+  const d=Object.assign({},current);
+  document.querySelectorAll('[data-key]').forEach(el=>d[el.dataset.key]=el.value);
+  d.sections={};
+  Object.entries(sections).forEach(([k])=>{d.sections[k]=[document.querySelector(`[data-sec="${k}"][data-part="0"]`).value,document.querySelector(`[data-sec="${k}"][data-part="1"]`).value]});
+  d.cardText={};
+  document.querySelectorAll('[data-card]').forEach(el=>d.cardText[el.dataset.card]=el.value);
+
+  if(pendingImageFile){
+   const ext=(pendingImageFile.name.split('.').pop()||'jpg').toLowerCase();
+   const path=`dohwadang/hero-${Date.now()}.${ext}`;
+   const sref=ref(storage,path);
+   await uploadBytes(sref,pendingImageFile,{customMetadata:{pw:ADMIN_PW}});
+   d.heroImageURL=await getDownloadURL(sref);
+  }else if(removeImageFlag){
+   d.heroImageURL='';
+  }
+
+  await setDoc(CONTENT_DOC,Object.assign({},d,{_pw:ADMIN_PW}));
+  current=d;
+  localStorage.setItem(KEY,JSON.stringify(d));
+  pendingImageFile=null;removeImageFlag=false;
+  notice('저장되었습니다. Firebase에 저장되어 모든 기기의 홈페이지에 반영됩니다.');
+ }catch(e){
+  console.error(e);
+  notice('저장 중 오류가 발생했습니다: '+(e.message||e));
+ }finally{
+  btn.disabled=false;btn.textContent=oldLabel;
+ }
+}
+
+function notice(t){const n=document.getElementById('notice');n.textContent=t;n.style.display='block';setTimeout(()=>n.style.display='none',3000)}
 function preview(){window.location.href='index.html'}
-function resetAll(){if(confirm('모든 관리자 문구를 기본값으로 복원할까요?')){localStorage.removeItem(KEY);load();notice('기본값으로 복원했습니다.')}}
+function resetAll(){
+ if(confirm('모든 관리자 문구를 기본값으로 되돌릴까요? (저장 버튼을 눌러야 Firebase에도 반영됩니다)')){
+  current=structuredClone(defaults);
+  pendingImageFile=null;removeImageFlag=true;
+  render();
+  notice('기본값으로 되돌렸습니다. 저장 버튼을 눌러야 Firebase에도 반영됩니다.');
+ }
+}
+
+window.login=login;
+window.save=save;
+window.preview=preview;
+window.resetAll=resetAll;
+window.onImageChosen=onImageChosen;
+window.removeImage=removeImage;
+
 if(sessionStorage.getItem('dohwadang_admin')==='1')show();
 </script></body></html>
