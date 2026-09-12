@@ -66,8 +66,10 @@ async function load(){
    render();
   }
  }catch(e){
-  console.error(e);
-  notice('Firebase에서 최신 내용을 불러오지 못했습니다. 이 브라우저에 저장된 내용을 표시합니다.');
+  console.error('Firebase 콘텐츠 로드 실패:',e);
+  let msg='Firebase에서 최신 내용을 불러오지 못했습니다. 이 브라우저에 저장된 내용을 표시합니다.';
+  if(e&&e.code==='permission-denied') msg+=' (Firestore 규칙이 읽기를 막고 있습니다 — 규칙을 게시했는지 확인해주세요.)';
+  notice(msg,6000);
  }
 }
 
@@ -89,38 +91,51 @@ async function save(){
  const btn=document.getElementById('saveBtn');
  const oldLabel=btn.textContent;
  btn.disabled=true;btn.textContent='저장 중...';
- try{
-  const d=Object.assign({},current);
-  document.querySelectorAll('[data-key]').forEach(el=>d[el.dataset.key]=el.value);
-  d.sections={};
-  Object.entries(sections).forEach(([k])=>{d.sections[k]=[document.querySelector(`[data-sec="${k}"][data-part="0"]`).value,document.querySelector(`[data-sec="${k}"][data-part="1"]`).value]});
-  d.cardText={};
-  document.querySelectorAll('[data-card]').forEach(el=>d.cardText[el.dataset.card]=el.value);
 
+ const d=Object.assign({},current);
+ document.querySelectorAll('[data-key]').forEach(el=>d[el.dataset.key]=el.value);
+ d.sections={};
+ Object.entries(sections).forEach(([k])=>{d.sections[k]=[document.querySelector(`[data-sec="${k}"][data-part="0"]`).value,document.querySelector(`[data-sec="${k}"][data-part="1"]`).value]});
+ d.cardText={};
+ document.querySelectorAll('[data-card]').forEach(el=>d.cardText[el.dataset.card]=el.value);
+ if(removeImageFlag) d.heroImageURL='';
+
+ // 1) Firebase 성공 여부와 무관하게 이 브라우저에는 즉시 반영/보관 (입력 내용을 잃지 않도록)
+ current=d;
+ localStorage.setItem(KEY,JSON.stringify(d));
+
+ try{
   if(pendingImageFile){
    const ext=(pendingImageFile.name.split('.').pop()||'jpg').toLowerCase();
    const path=`dohwadang/hero-${Date.now()}.${ext}`;
    const sref=ref(storage,path);
    await uploadBytes(sref,pendingImageFile,{customMetadata:{pw:ADMIN_PW}});
    d.heroImageURL=await getDownloadURL(sref);
-  }else if(removeImageFlag){
-   d.heroImageURL='';
   }
-
   await setDoc(CONTENT_DOC,Object.assign({},d,{_pw:ADMIN_PW}));
   current=d;
   localStorage.setItem(KEY,JSON.stringify(d));
   pendingImageFile=null;removeImageFlag=false;
+  render();
   notice('저장되었습니다. Firebase에 저장되어 모든 기기의 홈페이지에 반영됩니다.');
  }catch(e){
-  console.error(e);
-  notice('저장 중 오류가 발생했습니다: '+(e.message||e));
+  console.error('Firebase 저장 실패:',e);
+  let msg='이 브라우저에는 저장됐지만 Firebase 동기화에는 실패했습니다.';
+  const code=e&&e.code;
+  if(code==='permission-denied'||code==='storage/unauthorized'){
+   msg+=' → Firebase 콘솔에서 Firestore/Storage 보안 규칙을 "게시(Publish)"까지 눌렀는지 확인해주세요. (규칙 내용을 넣기만 하고 게시를 안 누르면 계속 이 오류가 납니다)';
+  }else if(code==='unavailable'){
+   msg+=' → 네트워크 연결을 확인해주세요.';
+  }else if(code){
+   msg+=` (오류 코드: ${code})`;
+  }
+  notice(msg,6000);
  }finally{
   btn.disabled=false;btn.textContent=oldLabel;
  }
 }
 
-function notice(t){const n=document.getElementById('notice');n.textContent=t;n.style.display='block';setTimeout(()=>n.style.display='none',3000)}
+function notice(t,ms=3000){const n=document.getElementById('notice');n.textContent=t;n.style.display='block';setTimeout(()=>n.style.display='none',ms)}
 function preview(){window.location.href='index.html'}
 function resetAll(){
  if(confirm('모든 관리자 문구를 기본값으로 되돌릴까요? (저장 버튼을 눌러야 Firebase에도 반영됩니다)')){
