@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="ko">
 <head>
@@ -33,10 +34,14 @@ input,select{border:1px solid #ddd2c2;border-radius:10px;padding:13px 12px;font:
 .note{text-align:center;color:#988e82;font-size:11px;line-height:1.8;margin-top:22px}
 @media(max-width:750px){.hero{background-position:center top}.hero-content{margin-top:3vh}.card{padding:19px}.grid,.two{grid-template-columns:1fr}.full{grid-column:auto}.pillars{grid-template-columns:repeat(2,1fr)}.analysis-grid{grid-template-columns:1fr}.today-grid{grid-template-columns:1fr 1fr}.summary th{width:115px}.section-head{display:block}.section-head p{margin-top:5px}}
 </style>
-</head>
+<style id="admin-button-style">
+.admin-mode-wrap{max-width:1120px;margin:10px auto 45px;text-align:center;padding:0 18px}
+.admin-mode-btn{display:inline-block;padding:11px 22px;border:1px solid #cbb895;border-radius:999px;background:#fffaf2;color:#766044;text-decoration:none;font-size:12px;font-weight:600;letter-spacing:.04em;transition:.2s}
+.admin-mode-btn:hover{background:#f1e8d8;transform:translateY(-1px)}
+</style></head>
 <body>
 <section class="hero" id="home">
-  <div class="nav"><div class="logo">桃花堂 · 도화당</div><small>SAJU · 命理</small></div>
+  <div class="nav"><div class="logo" id="siteLogo">桃花堂 · 도화당</div><small><span id="navSub">SAJU · 命理</span> · <a href="admin.html" style="color:inherit;text-decoration:none;opacity:.75">ADMIN</a></small></div>
   <div class="hero-content">
     <div class="kicker">YOUR DESTINY, YOUR STORY</div>
     <h1>나의 사주를<br>알아보세요</h1>
@@ -86,6 +91,9 @@ input,select{border:1px solid #ddd2c2;border-radius:10px;padding:13px 12px;font:
   <div class="note">※ 본 결과는 전통 명리학의 상징과 오행 해석을 참고해 제작한 엔터테인먼트·정보 콘텐츠입니다. 질병 진단, 투자 조언, 법률·의료 등 중요한 의사결정의 유일한 근거로 사용하지 마세요.</div>
   <button class="back" onclick="document.getElementById('result').style.display='none';document.getElementById('home').scrollIntoView({behavior:'smooth'})">다시 입력하기</button>
 </div></section>
+<div class="admin-mode-wrap">
+  <a class="admin-mode-btn" href="admin.html">⚙ 관리자 모드</a>
+</div>
 
 <script>
 const stemEl={'甲':'목','乙':'목','丙':'화','丁':'화','戊':'토','己':'토','庚':'금','辛':'금','壬':'수','癸':'수'};
@@ -118,6 +126,27 @@ function countsOf(vals){let c={목:0,화:0,토:0,금:0,수:0};vals.forEach(v=>{i
 function card(title,text,kind=''){return `<div class="analysis-card ${kind}"><div class="num">SAJU INSIGHT</div><h4>${title}</h4><p>${text}</p></div>`}
 function buildGrid(id,items,kind=''){document.getElementById(id).innerHTML=items.map(x=>card(x[0],x[1],kind)).join('')}
 function flowText(el,weak){const m={목:'성장과 새로운 시작',화:'표현력과 행동',토:'기반을 다지는 일',금:'정리와 선택',수:'관찰과 준비'};return {strong:`${m[el]}의 흐름을 적극 활용할수록 장점이 살아납니다.`,weak:`${m[weak]}을 의식적으로 보완하면 균형을 잡는 데 도움이 됩니다.`}}
+
+const defaultContent={
+ logo:'桃花堂 · 도화당',navSub:'SAJU · 命理',heroKicker:'BIRTH DATA · DESTINY · FLOW',heroTitle:'나의 사주를<br>알아보세요',heroSub:'사주팔자와 오행부터 타고난 성향, 재물·직업·연애운, 대운의 흐름과 오늘의 운세까지 한 번에 확인하세요.',
+ sections:{basic:['1. 기본 사주 정보','사주팔자와 오행의 기본 구조'],nature:['2. 핵심 성향 분석 ⭐','“당신은 어떤 사람인가?”'],money:['3. 재물운 💰','어떤 방식으로 돈을 벌어야 유리한가'],career:['4. 직업·사업운','일하는 방식과 성공 가능성'],love:['5. 연애·결혼운 ❤️','관계에서 드러나는 나의 모습'],health:['6. 건강·생활운','의학적 진단이 아닌 생활 관리 관점의 해석'],flow:['7. 대운·세운 ⭐⭐⭐','과거 → 현재 → 미래의 흐름'],stars:['8. 신살·귀인 분석','내 사주에 나타나는 특징과 보조적인 상징'],today:['9. 오늘의 사주 ⭐','매일 다른 조합으로 생성되는 오늘의 메시지'],summary:['10. 한눈에 보는 나','내 사주를 한 문장씩 정리']},
+ cardText:{
+ '타고난 성격':'','장점':'','단점':'','숨겨진 성향':'','인간관계 스타일':'','스트레스 받을 때':'','잘 맞는 사람':'','충돌하기 쉬운 사람':'',
+ '타고난 재물운':'','돈을 버는 방식':'','투자 성향':'','사업운':'','직장인 재물운':'','재물을 모으는 데 방해되는 성향':'',
+ '타고난 직업 성향':'','잘 맞는 일':'','조직생활 적합도':'','사업 적합도':'','리더십':'','조심할 직업적 성향':'',
+ '연애 스타일':'','사랑할 때 나타나는 특징':'','이상형':'','반복되는 문제':'','현재 연애 중이라면':'','솔로라면':'','결혼·인연 흐름':'',
+ '생활 리듬':'','스트레스 관리':'','에너지 흐름':'','휴식이 필요한 순간':'','생활 주의점':''},
+ disclaimer:'※ 본 서비스의 결과는 전통 명리학을 참고한 엔터테인먼트·정보 콘텐츠입니다. 건강, 투자, 법률, 의료 등 중요한 의사결정의 유일한 근거로 사용하지 마세요.'
+};
+function getContent(){try{return Object.assign({},defaultContent,JSON.parse(localStorage.getItem('dohwadang_saju_content_v1')||'{}'))}catch(e){return defaultContent}}
+function applyContent(){const c=getContent();
+ const set=(id,v,html=false)=>{const el=document.getElementById(id);if(el)html?el.innerHTML=v:el.textContent=v};
+ set('siteLogo',c.logo);set('navSub',c.navSub);set('heroKicker',c.heroKicker);set('heroTitle',c.heroTitle,true);set('heroSub',c.heroSub);
+ Object.entries(c.sections||{}).forEach(([id,v])=>{const s=document.getElementById(id);if(s){const h=s.querySelector('.section-head h3'),p=s.querySelector('.section-head p');if(h&&v[0])h.textContent=v[0];if(p&&v[1])p.textContent=v[1]}});
+ document.querySelectorAll('[data-disclaimer]').forEach(el=>el.textContent=c.disclaimer);
+}
+function applyCardOverrides(){const c=getContent().cardText||{};document.querySelectorAll('.analysis-card h4').forEach(h=>{const t=h.textContent.trim();if(c[t]&&c[t].trim()){const p=h.parentElement.querySelector('p');if(p)p.textContent=c[t]}})}
+applyContent();
 
 sajuFormEl.addEventListener('submit',e=>{
  e.preventDefault();
@@ -234,6 +263,7 @@ sajuFormEl.addEventListener('submit',e=>{
    ['주의할 점',pick(['성급한 결론','혼자 감당하기','감정을 쌓아두기','계획 없는 소비','과도한 자기압박'],seed,14)]
   ];
   summaryBodyEl.innerHTML=summary.map(x=>`<tr><th>${x[0]}</th><td>${x[1]}</td></tr>`).join('');
+  applyContent(); applyCardOverrides();
   result.style.display='block';setTimeout(()=>result.scrollIntoView({behavior:'smooth'}),50);
  }catch(err){alert(err.message||'사주 계산 중 오류가 발생했습니다.');}
 });
