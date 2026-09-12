@@ -47,6 +47,7 @@ input,select{border:1px solid #ddd2c2;border-radius:10px;padding:13px 12px;font:
     <h1>나의 사주를<br>알아보세요</h1>
     <div class="sub">태어난 순간의 시간과 계절을 바탕으로<br>나만의 사주팔자와 인생의 흐름을 살펴보세요.</div>
     <div class="card">
+      <img id="cardTopImage" alt="" src="" style="display:none;width:100%;border-radius:14px;margin-bottom:16px;object-fit:cover;max-height:220px">
       <div class="tabs"><button type="button" class="tab active" data-type="solar">양력</button><button type="button" class="tab" data-type="lunar">음력</button></div>
       <form id="sajuForm">
         <input type="hidden" id="calendarType" value="solar">
@@ -154,7 +155,8 @@ const defaultContent={
  '연애 스타일':'','사랑할 때 나타나는 특징':'','이상형':'','반복되는 문제':'','현재 연애 중이라면':'','솔로라면':'','결혼·인연 흐름':'',
  '생활 리듬':'','스트레스 관리':'','에너지 흐름':'','휴식이 필요한 순간':'','생활 주의점':''},
  disclaimer:'※ 본 서비스의 결과는 전통 명리학을 참고한 엔터테인먼트·정보 콘텐츠입니다. 건강, 투자, 법률, 의료 등 중요한 의사결정의 유일한 근거로 사용하지 마세요.',
- heroImageURL:''
+ heroImageURL:'',
+ cardImageURL:''
 };
 function getLocalContent(){try{return Object.assign({},defaultContent,JSON.parse(localStorage.getItem('dohwadang_saju_content_v1')||'{}'))}catch(e){return defaultContent}}
 let siteContent=getLocalContent();
@@ -164,6 +166,8 @@ function applyContent(){const c=siteContent;
  Object.entries(c.sections||{}).forEach(([id,v])=>{const s=document.getElementById(id);if(s){const h=s.querySelector('.section-head h3'),p=s.querySelector('.section-head p');if(h&&v[0])h.textContent=v[0];if(p&&v[1])p.textContent=v[1]}});
  document.querySelectorAll('[data-disclaimer]').forEach(el=>el.textContent=c.disclaimer);
  if(c.heroImageURL){const heroEl=document.querySelector('.hero');if(heroEl)heroEl.style.backgroundImage=`linear-gradient(180deg,rgba(0,0,0,.12),rgba(0,0,0,.88)), url('${c.heroImageURL}')`;}
+ const cardImgEl=document.getElementById('cardTopImage');
+ if(cardImgEl){if(c.cardImageURL){cardImgEl.src=c.cardImageURL;cardImgEl.style.display='block'}else{cardImgEl.src='';cardImgEl.style.display='none'}}
 }
 function applyCardOverrides(){const c=siteContent.cardText||{};document.querySelectorAll('.analysis-card h4').forEach(h=>{const t=h.textContent.trim();if(c[t]&&c[t].trim()){const p=h.parentElement.querySelector('p');if(p)p.textContent=c[t]}})}
 applyContent();
